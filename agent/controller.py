@@ -6,6 +6,7 @@ from agent.scorer import calculate_match_score
 from agent.validator import validate_matches
 from models.search_summary import SearchSummary
 from tools.search import search_entities
+from agent.risk_analyzer import analyze_supplier_risk
 
 def run_agent(user_request: str):
 
@@ -52,6 +53,11 @@ def run_agent(user_request: str):
         for supplier in suppliers
     ]
 
+    risks = [
+        analyze_supplier_risk(supplier)
+        for supplier in suppliers
+    ]
+
     # Step 6
     validation = validate_matches(
         matches,
@@ -73,6 +79,7 @@ def run_agent(user_request: str):
         "matches": matches,
         "validation": validation,
         "summary": summary,
+        "risks": risks,
     }
 
 if __name__ == "__main__":

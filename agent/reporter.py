@@ -11,6 +11,7 @@ def generate_report(
     matches,
     validation,
     summary: SearchSummary,
+     risks,
 ):
 
     print("=" * 65)
@@ -73,6 +74,15 @@ def generate_report(
 
         print("-" * 65)
 
+    print("\n⚠ RISK ANALYSIS")
+    print("-" * 65)
+
+    for risk in risks:
+        print(f"\n{risk.supplier_name} ({risk.supplier_id})")
+
+        for item in risk.risks:
+            print(f"   • {item}")
+
     print("\n✅ VALIDATION")
     print("-" * 65)
 
@@ -115,4 +125,5 @@ and deliver within 30 days.
         result["matches"],
         result["validation"],
         result["summary"],
+        result["risks"],
     )
