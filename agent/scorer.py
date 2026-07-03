@@ -5,7 +5,9 @@ from models.requirement import Requirement
 def calculate_match_score(
     supplier: dict,
     requirement: Requirement
+    
 ) -> Match:
+    evidence = []
 
     breakdown = {}
 
@@ -18,6 +20,7 @@ def calculate_match_score(
 
         breakdown["product"] = 30
         score += 30
+        evidence.append("Product category matches the requirement.")
 
     else:
         breakdown["product"] = 0
@@ -28,6 +31,9 @@ def calculate_match_score(
 
         breakdown["location"] = 20
         score += 20
+        evidence.append(
+            f"Located in {supplier['state']}."
+        )
 
     else:
         breakdown["location"] = 0
@@ -39,6 +45,9 @@ def calculate_match_score(
 
         breakdown["capacity"] = 25
         score += 25
+        evidence.append(
+            f"Monthly capacity {supplier['monthly_capacity']} meets the required capacity."
+        )
 
     else:
         breakdown["capacity"] = 0
@@ -50,6 +59,9 @@ def calculate_match_score(
 
         breakdown["delivery"] = 15
         score += 15
+        evidence.append(
+            f"Delivery time of {supplier['delivery_days']} days satisfies the deadline."
+        )
 
     else:
         breakdown["delivery"] = 0
@@ -61,12 +73,16 @@ def calculate_match_score(
     breakdown["rating"] = rating_score
 
     score += rating_score
+    evidence.append(
+        f"Supplier rating: {supplier['rating']}/5."
+    )
 
     return Match(
         supplier_id=supplier["supplier_id"],
         supplier_name=supplier["name"],
         score=round(score, 2),
-        breakdown=breakdown
+        breakdown=breakdown,
+        evidence=evidence,
     )
 
 
