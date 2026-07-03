@@ -2,13 +2,15 @@ from models.requirement import Requirement
 from models.plan import ExecutionPlan
 from models.match import Match
 from models.validation import ValidationResult
+from models.search_summary import SearchSummary
 
 
 def generate_report(
-    requirement: Requirement,
-    plan: ExecutionPlan,
-    matches: list[Match],
-    validation: ValidationResult,
+    requirement,
+    plan,
+    matches,
+    validation,
+    summary: SearchSummary,
 ):
 
     print("=" * 65)
@@ -37,6 +39,15 @@ def generate_report(
 
     print("\n🧠 EXECUTION PLAN")
     print("-" * 65)
+
+    print("\n📊 SEARCH SUMMARY")
+    print("-" * 65)
+
+    print(f"Total Suppliers        : {summary.total_suppliers}")
+    print(f"Product Matches        : {summary.product_matches}")
+    print(f"Passed Capacity Check  : {summary.capacity_matches}")
+    print(f"Passed Delivery Check  : {summary.delivery_matches}")
+    print(f"Final Recommendations  : {summary.final_matches}")
 
     for step in plan.steps:
         print(f"✓ {step}")
@@ -103,4 +114,5 @@ and deliver within 30 days.
         result["plan"],
         result["matches"],
         result["validation"],
+        result["summary"],
     )

@@ -4,6 +4,8 @@ from agent.planner import create_execution_plan
 from agent.executor import execute_search
 from agent.scorer import calculate_match_score
 from agent.validator import validate_matches
+from models.search_summary import SearchSummary
+from tools.search import search_entities
 
 def run_agent(user_request: str):
 
@@ -12,6 +14,31 @@ def run_agent(user_request: str):
 
     # Step 2
     requirement = normalize_requirement(requirement)
+
+    # Total suppliers
+    total_suppliers = len(search_entities())
+
+
+    # Suppliers matching the requested product
+    product_matches = len(
+        search_entities(
+            product_category=requirement.hard_constraints.product_category
+        )
+    )
+
+    product_suppliers = search_entities(
+        product_category=requirement.hard_constraints.product_category
+    )
+
+    capacity_matches = sum(
+        supplier["monthly_capacity"] >= requirement.hard_constraints.minimum_capacity
+        for supplier in product_suppliers
+    )
+
+    delivery_matches = sum(
+        supplier["delivery_days"] <= requirement.hard_constraints.maximum_delivery_days
+        for supplier in product_suppliers
+    )
 
     # Step 3
     plan = create_execution_plan(requirement)
@@ -32,11 +59,20 @@ def run_agent(user_request: str):
         requirement
     )
 
+    summary = SearchSummary(
+        total_suppliers=total_suppliers,
+        product_matches=product_matches,
+        capacity_matches=capacity_matches,
+        delivery_matches=delivery_matches,
+        final_matches=len(matches),
+    )
+
     return {
         "requirement": requirement,
         "plan": plan,
         "matches": matches,
         "validation": validation,
+        "summary": summary,
     }
 
 if __name__ == "__main__":

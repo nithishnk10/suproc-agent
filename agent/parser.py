@@ -55,7 +55,19 @@ def parse_requirement(user_request: str) -> Requirement:
 
     data = json.loads(content)
 
+    # ---- Normalize preference values ----
+    preferences = data.get("preferences", {})
+
+    if not isinstance(preferences.get("startup_friendly"), bool):
+        preferences["startup_friendly"] = None
+
+    if not isinstance(preferences.get("sustainable_materials"), bool):
+        preferences["sustainable_materials"] = None
+
+    data["preferences"] = preferences
+
     return Requirement.model_validate(data)
+
 
 if __name__ == "__main__":
     request = """

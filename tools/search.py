@@ -23,8 +23,8 @@ def search_entities(
         params.append(state)
 
     if product_category:
-        query += " AND LOWER(product_category) = LOWER(?)"
-        params.append(product_category)
+        query += " AND LOWER(product_category) LIKE ?"
+        params.append(f"%{product_category.lower()}%")
 
     if certification:
         query += " AND certifications LIKE ?"
