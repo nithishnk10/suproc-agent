@@ -40,6 +40,9 @@ def generate_report(
     print("\n🧠 EXECUTION PLAN")
     print("-" * 65)
 
+    for step in plan.steps:
+        print(f"✓ {step}")
+
     print("\n📊 SEARCH SUMMARY")
     print("-" * 65)
 
@@ -48,9 +51,6 @@ def generate_report(
     print(f"Passed Capacity Check  : {summary.capacity_matches}")
     print(f"Passed Delivery Check  : {summary.delivery_matches}")
     print(f"Final Recommendations  : {summary.final_matches}")
-
-    for step in plan.steps:
-        print(f"✓ {step}")
 
     print("\n🏆 RECOMMENDED SUPPLIERS")
     print("-" * 65)
