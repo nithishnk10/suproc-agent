@@ -11,7 +11,8 @@ def generate_report(
     matches,
     validation,
     summary: SearchSummary,
-     risks,
+    risks,
+    missing_information,
 ):
 
     print("=" * 65)
@@ -83,6 +84,15 @@ def generate_report(
         for item in risk.risks:
             print(f"   • {item}")
 
+    print("\n❓ MISSING INFORMATION")
+    print("-" * 65)
+
+    if missing_information.items:
+        for item in missing_information.items:
+            print(f"• {item}")
+    else:
+        print("No missing information detected.")
+
     print("\n✅ VALIDATION")
     print("-" * 65)
 
@@ -126,4 +136,5 @@ and deliver within 30 days.
         result["validation"],
         result["summary"],
         result["risks"],
+        result["missing_information"],
     )

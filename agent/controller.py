@@ -7,6 +7,8 @@ from agent.validator import validate_matches
 from models.search_summary import SearchSummary
 from tools.search import search_entities
 from agent.risk_analyzer import analyze_supplier_risk
+from agent.missing_information import detect_missing_information
+
 
 def run_agent(user_request: str):
 
@@ -58,6 +60,8 @@ def run_agent(user_request: str):
         for supplier in suppliers
     ]
 
+    missing_information = detect_missing_information(requirement)
+
     # Step 6
     validation = validate_matches(
         matches,
@@ -80,6 +84,7 @@ def run_agent(user_request: str):
         "validation": validation,
         "summary": summary,
         "risks": risks,
+        "missing_information": missing_information,
     }
 
 if __name__ == "__main__":
