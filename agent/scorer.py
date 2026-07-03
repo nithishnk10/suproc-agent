@@ -15,13 +15,14 @@ def calculate_match_score(
 
     # Product Match (30)
 
-    if supplier["product_category"].lower() == \
-       requirement.hard_constraints.product_category.lower():
+    supplier_product = supplier["product_category"].lower().replace("-", " ")
+    required_product = requirement.hard_constraints.product_category.lower().replace("-", " ")
 
-        breakdown["product"] = 30
+    if all(word in supplier_product for word in required_product.split()):
         score += 30
+        breakdown["product"] = 30.0
         evidence.append("Product category matches the requirement.")
-
+        
     else:
         breakdown["product"] = 0
 
@@ -80,6 +81,7 @@ def calculate_match_score(
     return Match(
         supplier_id=supplier["supplier_id"],
         supplier_name=supplier["name"],
+        state=supplier["state"],
         score=round(score, 2),
         breakdown=breakdown,
         evidence=evidence,

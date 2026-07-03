@@ -8,6 +8,8 @@ from models.search_summary import SearchSummary
 from tools.search import search_entities
 from agent.risk_analyzer import analyze_supplier_risk
 from agent.missing_information import detect_missing_information
+from agent.dataset_capability import check_dataset_capability
+from agent.execution_trace import build_execution_trace
 
 
 def run_agent(user_request: str):
@@ -77,14 +79,20 @@ def run_agent(user_request: str):
         final_matches=len(matches),
     )
 
+    capability = check_dataset_capability(requirement)
+
+    trace = build_execution_trace()
+
     return {
         "requirement": requirement,
         "plan": plan,
-        "matches": matches,
-        "validation": validation,
         "summary": summary,
+        "matches": matches,
         "risks": risks,
         "missing_information": missing_information,
+        "validation": validation,
+        "capability": capability,
+        "trace": trace,
     }
 
 if __name__ == "__main__":

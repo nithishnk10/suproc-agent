@@ -3,6 +3,8 @@ from models.plan import ExecutionPlan
 from models.match import Match
 from models.validation import ValidationResult
 from models.search_summary import SearchSummary
+from agent.human_approval import request_human_approval
+from agent.email_generator import generate_procurement_email
 
 
 def generate_report(
@@ -13,6 +15,8 @@ def generate_report(
     summary: SearchSummary,
     risks,
     missing_information,
+    capability,
+    trace,
 ):
 
     print("=" * 65)
@@ -53,6 +57,20 @@ def generate_report(
     print(f"Passed Capacity Check  : {summary.capacity_matches}")
     print(f"Passed Delivery Check  : {summary.delivery_matches}")
     print(f"Final Recommendations  : {summary.final_matches}")
+
+    print("\n📦 DATASET CAPABILITY CHECK")
+    print("-" * 65)
+
+    print("\nAvailable")
+
+    for field in capability.available:
+        print(f"✓ {field}")
+
+    if capability.unavailable:
+        print("\nUnavailable")
+
+        for field in capability.unavailable:
+            print(f"✗ {field}")
 
     print("\n🏆 RECOMMENDED SUPPLIERS")
     print("-" * 65)
@@ -104,14 +122,32 @@ def generate_report(
         for error in validation.errors:
             print(error)
 
+    print("\n📜 EXECUTION TRACE")
+    print("-" * 65)
+
+    for step in trace.steps:
+        print(f"✓ {step}")
+
     print("\n⚠ NEXT ACTION")
     print("-" * 65)
 
-    print("Recommended:")
-    print("Send procurement enquiry.")
+    print("\nRecommended Workflow")
 
-    print("\nSTATUS")
-    print("Awaiting Human Approval")
+    actions = [
+        "Review the top-ranked suppliers.",
+        "Confirm missing certification requirements.",
+        "Obtain procurement manager approval.",
+        "Generate procurement enquiry email.",
+        "Send enquiry to selected suppliers.",
+        "Await supplier quotations."
+    ]
+
+    for i, action in enumerate(actions, start=1):
+        print(f"{i}. {action}")
+
+    print("\nCurrent Status")
+    print("⏳ Awaiting Human Approval")
+
 
     print("=" * 65)
 
@@ -137,4 +173,30 @@ and deliver within 30 days.
         result["summary"],
         result["risks"],
         result["missing_information"],
+        result["capability"],
+        result["trace"],
     )
+
+
+    approved = request_human_approval()
+
+    if approved:
+
+        print("\nGenerating procurement enquiry...\n")
+
+        supplier = result["matches"][0]
+
+        supplier_data = {
+            "name": supplier.supplier_name,
+            "state": supplier.state
+        }
+
+        email = generate_procurement_email(
+            result["requirement"],
+            supplier_data
+        )
+
+        print(email)
+
+    else:
+        print("\nWorkflow terminated.")
