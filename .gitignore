@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+
+# Database
+*.db
+
+# VS Code
+.vscode/
+
+# Environment Variables
+.env
+
+# Ollama models (if any local cache)
+*.log
