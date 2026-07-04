@@ -20,20 +20,20 @@ def validate_matches(
 
     for match in matches:
 
-        supplier = supplier_lookup.get(match.supplier_id)
+        supplier = supplier_lookup.get(match.entity_id)
 
         if supplier is None:
             errors.append(
-                f"{match.supplier_id} not found in database."
+                f"{match.entity_id} not found in database."
             )
             continue
 
-        if match.supplier_id in seen:
+        if match.entity_id in seen:
             errors.append(
-                f"Duplicate supplier {match.supplier_id}"
+                f"Duplicate supplier {match.entity_id}"
             )
 
-        seen.add(match.supplier_id)
+        seen.add(match.entity_id)
 
         if (
             requirement.hard_constraints.locations

@@ -2,7 +2,7 @@ from models.match import Match
 from models.requirement import Requirement
 
 
-def calculate_match_score(
+def calculate_supplier_score(
     supplier: dict,
     requirement: Requirement
     
@@ -87,13 +87,29 @@ def calculate_match_score(
     )
 
     return Match(
-        supplier_id=supplier["supplier_id"],
-        supplier_name=supplier["name"],
-        state=supplier["state"],
+        entity_id=supplier["supplier_id"],
+        entity_name=supplier["name"],
+        entity_type="supplier",
+        location=supplier["state"],
         score=round(score, 2),
         breakdown=breakdown,
         evidence=evidence,
     )
+
+
+def calculate_match_score(entity: dict, requirement: Requirement) -> Match:
+
+    if requirement.entity_type == "supplier":
+        return calculate_supplier_score(entity, requirement)
+
+    elif requirement.entity_type == "professional":
+        raise NotImplementedError("Professional scoring not implemented yet.")
+
+    elif requirement.entity_type == "opportunity":
+        raise NotImplementedError("Opportunity scoring not implemented yet.")
+
+    else:
+        raise ValueError(f"Unsupported entity type: {requirement.entity_type}")
 
 
 if __name__ == "__main__":
@@ -122,3 +138,4 @@ and deliver within 30 days.
         )
 
         print(match.model_dump_json(indent=2))
+

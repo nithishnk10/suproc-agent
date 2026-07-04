@@ -83,8 +83,8 @@ def generate_report(
 
     for i, match in enumerate(matches, start=1):
 
-        print(f"\n{i}. {match.supplier_name}")
-        print(f"Supplier ID : {match.supplier_id}")
+        print(f"\n{i}. {match.entity_name}")
+        print(f"Supplier ID : {match.entity_id}")
         print(f"Score       : {match.score}")
 
         print("\nScore Breakdown")
@@ -207,7 +207,7 @@ Find three suppliers from South India providing food-grade biodegradable contain
 
             match = result["matches"][0]
 
-            supplier = get_entity_details(match.supplier_id)
+            supplier = get_entity_details(match.entity_id)
 
             email = generate_procurement_email(
                 result["requirement"],

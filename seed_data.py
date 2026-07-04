@@ -101,8 +101,13 @@ def generate_professional(index: int):
     return {
         "professional_id": f"PRO-{index:03}",
         "name": PROFESSIONAL_NAMES[(index - 1) % len(PROFESSIONAL_NAMES)],
+        "role": random.choice(PROFESSIONAL_ROLES),
         "skills": "|".join(random.sample(SKILLS, 3)),
+        "certifications": "|".join(random.sample(CERTIFICATIONS, 2)),
+        "preferred_industry": random.choice(INDUSTRIES),
         "experience_years": random.randint(2, 15),
+        "hourly_rate": random.randint(1500, 6000),
+        "remote_available": random.choice([0, 1]),
         "city": city,
         "state": state,
         "availability": random.choice(AVAILABILITY),
@@ -110,7 +115,6 @@ def generate_professional(index: int):
         "created_at": timestamp(),
         "updated_at": timestamp(),
     }
-
 
 # --------------------------------------------------
 # BUSINESS
@@ -255,8 +259,13 @@ def seed_professionals(db):
         INSERT INTO professionals (
             professional_id,
             name,
+            role,
             skills,
+            certifications,
+            preferred_industry,
             experience_years,
+            hourly_rate,
+            remote_available,
             city,
             state,
             availability,
@@ -264,12 +273,17 @@ def seed_professionals(db):
             created_at,
             updated_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             professional["professional_id"],
             professional["name"],
+            professional["role"],
             professional["skills"],
+            professional["certifications"],
+            professional["preferred_industry"],
             professional["experience_years"],
+            professional["hourly_rate"],
+            professional["remote_available"],
             professional["city"],
             professional["state"],
             professional["availability"],
