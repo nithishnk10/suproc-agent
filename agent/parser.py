@@ -53,6 +53,7 @@ def parse_requirement(user_request: str) -> Requirement:
 
     content = response["message"]["content"].strip()
 
+
     data = json.loads(content)
 
     # ---- Normalize preference values ----

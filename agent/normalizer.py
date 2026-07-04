@@ -32,6 +32,11 @@ def normalize_requirement(requirement: Requirement) -> Requirement:
 
     requirement.hard_constraints.locations = normalized_locations
 
+    requirement.entity_type = requirement.entity_type.lower().strip()
+
+    if requirement.entity_type.endswith("s"):
+        requirement.entity_type = requirement.entity_type[:-1]
+
     return requirement
 
 if __name__ == "__main__":

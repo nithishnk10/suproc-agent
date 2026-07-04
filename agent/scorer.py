@@ -28,41 +28,49 @@ def calculate_match_score(
 
     # Location (20)
 
-    if supplier["state"] in requirement.hard_constraints.locations:
+    locations = requirement.hard_constraints.locations
+
+    if not locations or supplier["state"] in locations:
 
         breakdown["location"] = 20
         score += 20
-        evidence.append(
-            f"Located in {supplier['state']}."
-        )
+
+        if locations:
+            evidence.append(f"Located in {supplier['state']}.")
 
     else:
         breakdown["location"] = 0
 
     # Capacity (25)
 
-    if supplier["monthly_capacity"] >= \
-            requirement.hard_constraints.minimum_capacity:
+    capacity = requirement.hard_constraints.minimum_capacity
+
+    if capacity is None or supplier["monthly_capacity"] >= capacity:
 
         breakdown["capacity"] = 25
         score += 25
-        evidence.append(
-            f"Monthly capacity {supplier['monthly_capacity']} meets the required capacity."
-        )
+
+        if capacity is not None:
+            evidence.append(
+                f"Monthly capacity {supplier['monthly_capacity']} meets the required capacity."
+            )
 
     else:
         breakdown["capacity"] = 0
 
     # Delivery (15)
 
-    if supplier["delivery_days"] <= \
-            requirement.hard_constraints.maximum_delivery_days:
+    delivery = requirement.hard_constraints.maximum_delivery_days
+
+    if delivery is None or supplier["delivery_days"] <= delivery:
 
         breakdown["delivery"] = 15
         score += 15
-        evidence.append(
-            f"Delivery time of {supplier['delivery_days']} days satisfies the deadline."
-        )
+
+        if delivery is not None:
+            evidence.append(
+                f"Delivery time of {supplier['delivery_days']} days satisfies the deadline."
+            )
 
     else:
         breakdown["delivery"] = 0

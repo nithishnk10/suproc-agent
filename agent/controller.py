@@ -35,14 +35,25 @@ def run_agent(user_request: str):
         product_category=requirement.hard_constraints.product_category
     )
 
-    capacity_matches = sum(
-        supplier["monthly_capacity"] >= requirement.hard_constraints.minimum_capacity
-        for supplier in product_suppliers
+    capacity_requirement = requirement.hard_constraints.minimum_capacity
+    delivery_requirement = requirement.hard_constraints.maximum_delivery_days
+
+    capacity_matches = (
+        sum(
+            supplier["monthly_capacity"] >= capacity_requirement
+            for supplier in product_suppliers
+        )
+        if capacity_requirement is not None
+        else len(product_suppliers)
     )
 
-    delivery_matches = sum(
-        supplier["delivery_days"] <= requirement.hard_constraints.maximum_delivery_days
-        for supplier in product_suppliers
+    delivery_matches = (
+        sum(
+            supplier["delivery_days"] <= delivery_requirement
+            for supplier in product_suppliers
+        )
+        if delivery_requirement is not None
+        else len(product_suppliers)
     )
 
     # Step 3
@@ -50,6 +61,7 @@ def run_agent(user_request: str):
 
     # Step 4
     suppliers = execute_search(requirement)
+
 
     # Step 5
     matches = [
@@ -87,6 +99,7 @@ def run_agent(user_request: str):
         "requirement": requirement,
         "plan": plan,
         "summary": summary,
+        "suppliers": suppliers,
         "matches": matches,
         "risks": risks,
         "missing_information": missing_information,

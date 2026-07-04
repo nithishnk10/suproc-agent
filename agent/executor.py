@@ -11,10 +11,19 @@ def execute_search(requirement: Requirement):
     locations = requirement.hard_constraints.locations
 
     if not locations:
-        return search_entities(
+        all_results = search_entities(
             entity_type=requirement.entity_type,
             product_category=requirement.hard_constraints.product_category,
         )
+    else:
+        for location in locations:
+            results = search_entities(
+                entity_type=requirement.entity_type,
+                state=location,
+                product_category=requirement.hard_constraints.product_category,
+            )
+
+            all_results.extend(results)
 
     for location in locations:
         results = search_entities(
@@ -26,11 +35,50 @@ def execute_search(requirement: Requirement):
         all_results.extend(results)
 
     # Remove duplicates
+    # Remove duplicates
     unique_results = {}
     for supplier in all_results:
         unique_results[supplier["supplier_id"]] = supplier
 
-    return list(unique_results.values())
+    results = list(unique_results.values())
+
+    filtered_results = []
+
+    for supplier in results:
+
+        # Minimum capacity
+        if (
+            requirement.hard_constraints.minimum_capacity is not None
+            and supplier["monthly_capacity"] < requirement.hard_constraints.minimum_capacity
+        ):
+            continue
+
+        # Maximum delivery days
+        if (
+            requirement.hard_constraints.maximum_delivery_days is not None
+            and supplier["delivery_days"] > requirement.hard_constraints.maximum_delivery_days
+        ):
+            continue
+
+        # Certifications
+        if requirement.hard_constraints.certifications:
+
+            supplier_certs = supplier["certifications"].lower()
+
+            missing = False
+
+            for cert in requirement.hard_constraints.certifications:
+                if cert.lower() not in supplier_certs:
+                    missing = True
+                    break
+
+            if missing:
+                continue
+
+        filtered_results.append(supplier)
+
+    return filtered_results
+
 
 if __name__ == "__main__":
 

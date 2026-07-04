@@ -6,9 +6,20 @@ from models.requirement import Requirement
 
 def generate_procurement_email(requirement: Requirement, supplier: dict):
 
-    product = requirement.hard_constraints.product_category
-    quantity = requirement.hard_constraints.minimum_capacity
-    delivery = requirement.hard_constraints.maximum_delivery_days
+    product = requirement.hard_constraints.product_category or "Not specified"
+
+    quantity = (
+        f"{requirement.hard_constraints.minimum_capacity:,} units"
+        if requirement.hard_constraints.minimum_capacity is not None
+        else "Not specified"
+    )
+
+    delivery = (
+        f"Within {requirement.hard_constraints.maximum_delivery_days} days"
+        if requirement.hard_constraints.maximum_delivery_days is not None
+        else "Not specified"
+    )
+
     location = supplier["state"]
 
     email = f"""
@@ -29,8 +40,8 @@ requirement and would like to request a quotation.
 REQUIREMENT DETAILS
 -------------------------------------------------------------
 Product            : {product.title()}
-Required Quantity  : {quantity:,} units
-Delivery Window    : Within {delivery} days
+Required Quantity  : {quantity}
+Delivery Window    : {delivery}
 Preferred Region   : {location}
 
 -------------------------------------------------------------

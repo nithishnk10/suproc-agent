@@ -35,8 +35,14 @@ def generate_report(
     print("\nHard Constraints")
 
     print(f"Product : {requirement.hard_constraints.product_category}")
-    print(f"Capacity: {requirement.hard_constraints.minimum_capacity}")
-    print(f"Delivery: {requirement.hard_constraints.maximum_delivery_days} days")
+    capacity = requirement.hard_constraints.minimum_capacity
+    delivery = requirement.hard_constraints.maximum_delivery_days
+
+    print(f"Capacity: {capacity if capacity is not None else 'Not specified'}")
+
+    print(
+        f"Delivery: {str(delivery) + ' days' if delivery is not None else 'Not specified'}"
+    )
 
     print("\nLocations")
 
@@ -128,25 +134,26 @@ def generate_report(
     for step in trace.steps:
         print(f"✓ {step}")
 
-    print("\n⚠ NEXT ACTION")
-    print("-" * 65)
+    if matches:
+        print("\n⚠ NEXT ACTION")
+        print("-" * 65)
 
-    print("\nRecommended Workflow")
+        print("\nRecommended Workflow")
 
-    actions = [
-        "Review the top-ranked suppliers.",
-        "Confirm missing certification requirements.",
-        "Obtain procurement manager approval.",
-        "Generate procurement enquiry email.",
-        "Send enquiry to selected suppliers.",
-        "Await supplier quotations."
-    ]
+        actions = [
+            "Review the top-ranked suppliers.",
+            "Confirm missing certification requirements.",
+            "Obtain procurement manager approval.",
+            "Generate procurement enquiry email.",
+            "Send enquiry to selected suppliers.",
+            "Await supplier quotations."
+        ]
 
-    for i, action in enumerate(actions, start=1):
-        print(f"{i}. {action}")
+        for i, action in enumerate(actions, start=1):
+            print(f"{i}. {action}")
 
-    print("\nCurrent Status")
-    print("⏳ Awaiting Human Approval")
+        print("\nCurrent Status")
+        print("⏳ Awaiting Human Approval")
 
 
     print("=" * 65)
@@ -157,10 +164,7 @@ if __name__ == "__main__":
     from agent.controller import run_agent
 
     request = """
-We need three suppliers from South India
-that provide food-grade biodegradable containers,
-support 10000 units
-and deliver within 30 days.
+Find three suppliers from South India providing food-grade biodegradable containers with minimum capacity of 10000 units and delivery within 30 days.
 """
 
     result = run_agent(request)
@@ -178,25 +182,34 @@ and deliver within 30 days.
     )
 
 
-    approved = request_human_approval()
+    if not result["matches"]:
+        print("\nNo suppliers matched the requested criteria.")
 
-    if approved:
+        print("-" * 65)
+        print("Try one or more of the following:")
+        print("1. Use a broader product category.")
+        print("2. Reduce capacity requirements.")
+        print("3. Increase the delivery window.")
+        print("4. Expand the search location.")
+        print("5. Add more suppliers to the database.")
 
-        print("\nGenerating procurement enquiry...\n")
-
-        supplier = result["matches"][0]
-
-        supplier_data = {
-            "name": supplier.supplier_name,
-            "state": supplier.state
-        }
-
-        email = generate_procurement_email(
-            result["requirement"],
-            supplier_data
-        )
-
-        print(email)
+        print("\nSTATUS")
+        print("Workflow Completed")
 
     else:
-        print("\nWorkflow terminated.")
+        approved = request_human_approval()
+
+        if approved:
+            print("\n✅ Recommendations Approved")
+            print("\nGenerating procurement enquiry...\n")
+
+            supplier = result["suppliers"][0]
+
+            email = generate_procurement_email(
+                result["requirement"],
+                supplier
+            )
+            print(email)
+        else:
+            print("\n❌ Recommendations Rejected")
+            print("\nWorkflow terminated.")

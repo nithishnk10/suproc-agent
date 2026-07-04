@@ -35,24 +35,25 @@ def validate_matches(
 
         seen.add(match.supplier_id)
 
-        if supplier["state"] not in requirement.hard_constraints.locations:
-            errors.append(
-                f"{match.supplier_id} failed location constraint."
-            )
+        if (
+            requirement.hard_constraints.locations
+            and supplier["state"] not in requirement.hard_constraints.locations
+        ):
+            errors.append(f"{supplier['supplier_id']} failed location constraint.")
 
-        if supplier["monthly_capacity"] < \
-                requirement.hard_constraints.minimum_capacity:
-            errors.append(
-                f"{match.supplier_id} insufficient capacity."
-            )
+        if (
+            requirement.hard_constraints.minimum_capacity is not None
+            and supplier["monthly_capacity"] < requirement.hard_constraints.minimum_capacity
+        ):
+            errors.append(f"{supplier['supplier_id']} insufficient capacity.")
 
-        if supplier["delivery_days"] > \
-                requirement.hard_constraints.maximum_delivery_days:
-            errors.append(
-                f"{match.supplier_id} delivery exceeds requirement."
-            )
+        if (
+            requirement.hard_constraints.maximum_delivery_days is not None
+            and supplier["delivery_days"] > requirement.hard_constraints.maximum_delivery_days
+        ):
+            errors.append(f"{supplier['supplier_id']} delivery deadline not met.")
 
-    return ValidationResult(
+    return ValidationResult(    
         passed=len(errors) == 0,
         errors=errors,
     )
