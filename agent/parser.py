@@ -11,13 +11,34 @@ You are an AI business analyst.
 
 Your task is to extract structured business requirements.
 
+Identify the correct entity_type based on the user's request.
+
+Valid entity types:
+- supplier
+- professional
+- opportunity
+
+Examples:
+
+User: Find suppliers of biodegradable containers.
+entity_type: supplier
+
+User: Find procurement consultants in Bangalore.
+entity_type: professional
+
+User: Find packaging tenders.
+entity_type: opportunity
+
+User: Find food packaging opportunities.
+entity_type: opportunity
+
 Return ONLY valid JSON.
 
 Schema:
 
 {{
   "objective": "",
-  "entity_type": "",
+  "entity_type": "supplier | professional | opportunity",
   "hard_constraints": {{
       "locations": [],
       "product_category": "",
@@ -71,13 +92,22 @@ def parse_requirement(user_request: str) -> Requirement:
 
 
 if __name__ == "__main__":
-    request = """
-We need three suppliers from South India
-that provide food-grade biodegradable containers,
-support 10000 units
-and deliver within 30 days.
-"""
 
-    result = parse_requirement(request)
+    requests = [
 
-    print(result.model_dump_json(indent=2))
+        "Find food-grade biodegradable suppliers in Tamil Nadu.",
+
+        "Find procurement professionals in Karnataka.",
+
+        "Find food packaging opportunities in South India."
+
+    ]
+
+    for request in requests:
+
+        print("=" * 60)
+        print(request)
+
+        result = parse_requirement(request)
+
+        print(result.model_dump_json(indent=2))

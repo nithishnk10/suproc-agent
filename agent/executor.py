@@ -26,23 +26,24 @@ def execute_search(requirement: Requirement):
 
             all_results.extend(results)
 
-    for location in locations:
-        results = search_entities(
-            entity_type=requirement.entity_type,
-            state=location,
-            product_category=requirement.hard_constraints.product_category,
-        )
-
-        all_results.extend(results)
 
     # Remove duplicates
     # Remove duplicates
+    entity_key = {
+        "supplier": "supplier_id",
+        "professional": "professional_id",
+        "opportunity": "opportunity_id",
+    }[requirement.entity_type]
+
     unique_results = {}
-    for supplier in all_results:
-        unique_results[supplier["supplier_id"]] = supplier
+
+    for item in all_results:
+        unique_results[item[entity_key]] = item
 
     results = list(unique_results.values())
-    results = filter_by_constraints(results, requirement)
+
+    if requirement.entity_type == "supplier":
+        results = filter_by_constraints(results, requirement)
 
     return results
 

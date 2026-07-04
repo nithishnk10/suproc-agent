@@ -8,12 +8,36 @@ LOCATION_MAP = {
         "Andhra Pradesh",
         "Telangana"
     ],
+
+    "north india": [
+        "Delhi",
+        "Punjab",
+        "Haryana",
+        "Uttar Pradesh",
+        "Rajasthan"
+    ],
+
     "tn": ["Tamil Nadu"],
+    "tamil nadu": ["Tamil Nadu"],
+
     "ka": ["Karnataka"],
+    "karnataka": ["Karnataka"],
+
     "ap": ["Andhra Pradesh"],
+    "andhra pradesh": ["Andhra Pradesh"],
+
     "ts": ["Telangana"],
+    "telangana": ["Telangana"],
+
     "kl": ["Kerala"],
+    "kerala": ["Kerala"],
+
     "bangalore": ["Bengaluru"],
+    "bengaluru": ["Bengaluru"],
+
+    "chennai": ["Chennai"],
+    "hyderabad": ["Hyderabad"],
+    "kochi": ["Kochi"],
 }
 
 def normalize_requirement(requirement: Requirement) -> Requirement:
@@ -36,6 +60,17 @@ def normalize_requirement(requirement: Requirement) -> Requirement:
 
     if requirement.entity_type.endswith("s"):
         requirement.entity_type = requirement.entity_type[:-1]
+
+    # Normalize product/category
+
+    if requirement.hard_constraints.product_category:
+
+        requirement.hard_constraints.product_category = (
+            requirement.hard_constraints.product_category
+            .lower()
+            .replace("-", " ")
+            .strip()
+        )
 
     return requirement
 
