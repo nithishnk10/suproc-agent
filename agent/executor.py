@@ -3,6 +3,7 @@ from models.requirement import Requirement
 
 from tools.search import search_entities
 from models.requirement import Requirement
+from agent.filter_by_constraints import filter_by_constraints
 
 
 def execute_search(requirement: Requirement):
@@ -41,43 +42,12 @@ def execute_search(requirement: Requirement):
         unique_results[supplier["supplier_id"]] = supplier
 
     results = list(unique_results.values())
+    results = filter_by_constraints(results, requirement)
 
-    filtered_results = []
+    return results
 
-    for supplier in results:
+    
 
-        # Minimum capacity
-        if (
-            requirement.hard_constraints.minimum_capacity is not None
-            and supplier["monthly_capacity"] < requirement.hard_constraints.minimum_capacity
-        ):
-            continue
-
-        # Maximum delivery days
-        if (
-            requirement.hard_constraints.maximum_delivery_days is not None
-            and supplier["delivery_days"] > requirement.hard_constraints.maximum_delivery_days
-        ):
-            continue
-
-        # Certifications
-        if requirement.hard_constraints.certifications:
-
-            supplier_certs = supplier["certifications"].lower()
-
-            missing = False
-
-            for cert in requirement.hard_constraints.certifications:
-                if cert.lower() not in supplier_certs:
-                    missing = True
-                    break
-
-            if missing:
-                continue
-
-        filtered_results.append(supplier)
-
-    return filtered_results
 
 
 if __name__ == "__main__":

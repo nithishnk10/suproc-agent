@@ -53,6 +53,12 @@ def validate_matches(
         ):
             errors.append(f"{supplier['supplier_id']} delivery deadline not met.")
 
+        # Check requested number of results
+    if len(matches) < requirement.requested_results:
+        errors.append(
+            f"Only {len(matches)} valid suppliers found. Requested {requirement.requested_results}."
+        )
+
     return ValidationResult(    
         passed=len(errors) == 0,
         errors=errors,

@@ -83,6 +83,43 @@ def run_agent(user_request: str):
         requirement
     )
 
+    # Step 7 - Correction Attempt
+
+    attempt = 1
+
+    while not validation.passed and attempt <= 3:
+
+        print(f"\nValidation failed. Correction attempt {attempt}/3")
+
+        for error in validation.errors:
+            print(f"  • {error}")
+
+        if attempt == 1:
+            print("\nAction: Re-running supplier search with the original constraints.")
+
+        elif attempt == 2:
+            print("\nAction: Constraints appear too restrictive.")
+            print("Suggestion: Consider reducing the required capacity or increasing the delivery window.")
+
+        else:
+            print("\nAction: Maximum correction attempts reached.")
+            print("Preparing recommendations for the user.")
+
+        suppliers = execute_search(requirement)
+
+        matches = [
+            calculate_match_score(supplier, requirement)
+            for supplier in suppliers
+        ]
+
+        validation = validate_matches(
+            matches,
+            suppliers,
+            requirement
+        )
+
+        attempt += 1
+
     summary = SearchSummary(
         total_suppliers=total_suppliers,
         product_matches=product_matches,

@@ -203,7 +203,16 @@ Find three suppliers from South India providing food-grade biodegradable contain
             print("\n✅ Recommendations Approved")
             print("\nGenerating procurement enquiry...\n")
 
-            supplier = result["suppliers"][0]
+            from tools.entity_details import get_entity_details
+
+            match = result["matches"][0]
+
+            supplier = get_entity_details(match.supplier_id)
+
+            email = generate_procurement_email(
+                result["requirement"],
+                supplier
+            )
 
             email = generate_procurement_email(
                 result["requirement"],
