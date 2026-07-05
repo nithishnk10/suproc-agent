@@ -1,3 +1,7 @@
+## Repository
+
+https://github.com/nithishnk10/suproc-agent
+
 # SUPROC AI Business Matching Agent
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![SQLite](https://img.shields.io/badge/Database-SQLite-green)
@@ -24,16 +28,7 @@ The agent supports three business entities:
 
 The system runs completely locally using **Qwen3:1.7B** through **Ollama**.
 
----
 
-
-## Complete Workflow
-
-The following figure illustrates the complete end-to-end workflow of the SUPROC AI Business Matching Agent.
-
-![SUPROC AI Procurement Agent Workflow](images/demo.png)
-
----
 
 
 ## Assignment Objectives
@@ -84,10 +79,13 @@ suproc-agent/
 │   ├── controller.py
 │   ├── correction.py
 │   ├── dataset_capability.py
+│   ├── demo.py
 │   ├── email_generator.py
 │   ├── execution_trace.py
 │   ├── executor.py
 │   ├── filter_by_constraints.py
+│   ├── filter_opportunities.py
+│   ├── filter_professionals.py
 │   ├── human_approval.py
 │   ├── missing_information.py
 │   ├── normalizer.py
@@ -103,6 +101,9 @@ suproc-agent/
 │   ├── database_manager.py
 │   ├── init_db.py
 │   └── suproc.db
+│
+├── images/
+│   └── demo.png
 │
 ├── logs/
 │
@@ -121,7 +122,7 @@ suproc-agent/
 │
 ├── tests/
 │   ├── restore_security.py
-│   ├── seed_data.py
+│   ├── test_agent.py
 │   └── test_security.py
 │
 ├── tools/
@@ -133,10 +134,42 @@ suproc-agent/
 │
 ├── app.py
 ├── config.py
+├── seed_data.py
 ├── requirements.txt
 ├── README.md
 └── .gitignore
 ```
+
+---
+
+
+## Sample Dataset
+
+The agent uses a local SQLite database containing synthetic business records.
+
+### Suppliers
+
+| Supplier | Product | State | Capacity | Delivery |
+|----------|----------|-------|----------|----------|
+| Smart Supplies | Biodegradable | Tamil Nadu | 45,000 | 15 days |
+| Eco Pack | Biodegradable | Karnataka | 22,000 | 14 days |
+
+### Professionals
+
+| Name | Role | Skills | State |
+|------|------|--------|-------|
+| Ravi Kumar | Procurement Manager | Procurement, SAP | Karnataka |
+| Anjali Sharma | AI Engineer | Python, FastAPI | Tamil Nadu |
+
+### Opportunities
+
+| Opportunity | Industry | Budget | Location |
+|------------|----------|--------|----------|
+| Food Packaging Tender | Food Packaging | ₹12,00,000 | Tamil Nadu |
+| Healthcare Procurement | Healthcare | ₹7,50,000 | Karnataka |
+
+The dataset is synthetic and intended for demonstration purposes.
+
 
 ---
 
@@ -235,6 +268,21 @@ Q -->|Rejected| T[Workflow Terminated]
 ---
 
 
+## System Requirements
+
+| Component | Requirement |
+|-----------|-------------|
+| OS | Windows, Linux, or macOS |
+| Python | 3.12+ |
+| RAM | Minimum 8 GB (16 GB recommended) |
+| Disk Space | ~5 GB |
+| LLM Runtime | Ollama |
+| Model | Qwen3:1.7B |
+| Database | SQLite |
+
+---
+
+
 
 ## Requirements
 
@@ -291,12 +339,18 @@ https://ollama.com
 ```bash
 ollama pull qwen3:1.7b
 ```
+### 7. Initialize the Database
 
-### 7. Run the Application
+```bash
+python seed_data.py
+```
+
+### 8. Run the Application
 
 ```bash
 python -m agent.reporter
 ```
+
 
 ---
 
@@ -333,14 +387,14 @@ python -m agent.reporter
 | parser.py | Converts natural language requirements into structured JSON using Qwen3:1.7B. |
 | normalizer.py | Normalizes locations and requirement fields. |
 | planner.py | Generates the execution plan for the agent. |
-| executor.py | Coordinates supplier search and filtering. |
+| executor.py | Coordinates entity search, filtering, and execution. |
 | search.py | Searches the local SQLite dataset for suppliers, professionals and opportunities. |
 | entity_details.py | Retrieves detailed information for any supported entity. |
 | filter_by_constraints.py | Applies product, location, capacity, delivery, and certification constraints. |
 | scorer.py | Calculates transparent match scores with evidence. |
 | validator.py | Validates recommendations against business constraints. |
 | correction.py | Performs up to three automatic correction attempts when validation fails. |
-| risk_analyzer.py → Performs risk analysis on recommended entities. |
+| risk_analyzer.py | Performs risk analysis on recommended entities. |
 | missing_information.py | Detects missing business requirements. |
 | dataset_capability.py | Reports which requested fields are available in the dataset. |
 | security.py | Filters prompt injection attempts from supplier records. |
@@ -378,6 +432,12 @@ The following scenarios were tested successfully:
 - Passed: 12
 - Failed: 0
 
+## Example Agent Output
+
+The following screenshot shows an example execution of the SUPROC AI Business Matching Agent.
+
+![Example Output](images/demo.png)
+
 
 
 ### Prompt Injection Protection
@@ -396,6 +456,32 @@ The malicious record was detected by the security module and excluded before rec
 
 Status:
 PASS
+
+---
+
+
+
+## Example Execution Trace
+
+Every execution records the major stages performed by the agent to provide transparency and explainability.
+
+Example:
+
+```text
+✓ Requirement parsed
+✓ Requirement normalized
+✓ Execution plan generated
+✓ Entity search completed
+✓ Entities scored
+✓ Evidence generated
+✓ Risk analysis completed
+✓ Missing information analyzed
+✓ Dataset capability checked
+✓ Validation completed
+✓ Report generated
+```
+
+The execution trace enables users to understand how the agent arrived at its recommendations and verifies that all validation steps were completed before presenting the final results.
 
 ---
 
@@ -425,11 +511,11 @@ Malicious suppliers are removed before ranking.
 
 ## Future Improvements
 
-- Integration with real supplier APIs.
+- Integration with real business data sources and APIs.
+- Multi-agent business workflow orchestration.
 - Automatic email delivery.
 - Retrieval-Augmented Generation (RAG) for larger datasets.
 - Web-based user interface.
-- Multi-agent procurement workflows.
 - Advanced supplier recommendation models.
 - Real-time supplier availability.
 
