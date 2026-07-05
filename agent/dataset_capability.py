@@ -2,19 +2,47 @@ from models.dataset_capability import DatasetCapability
 from models.requirement import Requirement
 
 
-AVAILABLE_FIELDS = [
-    "Product Category",
-    "State",
-    "Monthly Capacity",
-    "Delivery Days",
-    "Supplier Rating",
-    "Sustainability Score",
-    "Startup Friendly",
-    "Certifications"
-]
-
-
 def check_dataset_capability(requirement: Requirement):
+
+    # ---------------- Available Fields ----------------
+
+    if requirement.entity_type == "supplier":
+
+        available = [
+            "Product Category",
+            "State",
+            "Monthly Capacity",
+            "Delivery Days",
+            "Supplier Rating",
+            "Sustainability Score",
+            "Startup Friendly",
+            "Certifications",
+        ]
+
+    elif requirement.entity_type == "professional":
+
+        available = [
+            "Role",
+            "Skills",
+            "Experience",
+            "State",
+            "Availability",
+            "Professional Rating",
+        ]
+
+    else:   # opportunity
+
+        available = [
+            "Industry",
+            "Location",
+            "Budget",
+            "Priority",
+            "Required Skills",
+            "Deadline",
+            "Client Name",
+        ]
+
+    # ---------------- Unavailable Fields ----------------
 
     unavailable = []
 
@@ -36,8 +64,8 @@ def check_dataset_capability(requirement: Requirement):
         unavailable.append("ISO 22000")
 
     return DatasetCapability(
-        available=AVAILABLE_FIELDS,
-        unavailable=unavailable
+        available=available,
+        unavailable=unavailable,
     )
 
 
@@ -47,9 +75,7 @@ if __name__ == "__main__":
     from agent.normalizer import normalize_requirement
 
     request = """
-Need suppliers under ₹50,000
-with ISO 22000
-and payment terms.
+Find food packaging opportunities in South India.
 """
 
     req = normalize_requirement(parse_requirement(request))

@@ -6,6 +6,12 @@ from models.search_summary import SearchSummary
 from agent.human_approval import request_human_approval
 from agent.email_generator import generate_procurement_email
 
+ENTITY_LABELS = {
+    "supplier": "Suppliers",
+    "professional": "Professionals",
+    "opportunity": "Opportunities",
+}
+
 
 def generate_report(
     requirement,
@@ -19,8 +25,14 @@ def generate_report(
     trace,
 ):
 
+    titles = {
+        "supplier": "SUPROC AI PROCUREMENT AGENT",
+        "professional": "SUPROC PROFESSIONAL MATCHING AGENT",
+        "opportunity": "SUPROC OPPORTUNITY DISCOVERY AGENT",
+    }
+
     print("=" * 65)
-    print("        SUPROC AI PROCUREMENT AGENT")
+    print(f"        {titles[requirement.entity_type]}")
     print("=" * 65)
 
     print("\n📋 BUSINESS REQUIREMENT")
@@ -34,15 +46,39 @@ def generate_report(
 
     print("\nHard Constraints")
 
-    print(f"Product : {requirement.hard_constraints.product_category}")
-    capacity = requirement.hard_constraints.minimum_capacity
-    delivery = requirement.hard_constraints.maximum_delivery_days
+    if requirement.entity_type == "supplier":
 
-    print(f"Capacity: {capacity if capacity is not None else 'Not specified'}")
+        print(f"Product : {requirement.hard_constraints.product_category}")
 
-    print(
-        f"Delivery: {str(delivery) + ' days' if delivery is not None else 'Not specified'}"
-    )
+        capacity = requirement.hard_constraints.minimum_capacity
+        delivery = requirement.hard_constraints.maximum_delivery_days
+
+        print(f"Capacity: {capacity if capacity is not None else 'Not specified'}")
+
+        print(
+            f"Delivery: {str(delivery) + ' days' if delivery is not None else 'Not specified'}"
+        )
+
+    elif requirement.entity_type == "professional":
+
+        print(f"Role      : {requirement.hard_constraints.role}")
+        print(f"Skills    : {requirement.hard_constraints.skills}")
+        print(f"Experience: {requirement.hard_constraints.minimum_experience}")
+
+    elif requirement.entity_type == "opportunity":
+
+        industry = requirement.hard_constraints.industry
+
+        if industry:
+            industry = industry.title()
+
+        print(f"Industry : {industry}")
+        print(f"Budget   : {requirement.hard_constraints.minimum_budget}")
+        priority = requirement.hard_constraints.priority
+
+        print(
+            f"Priority : {priority if priority else 'Not specified'}"
+        )
 
     print("\nLocations")
 
@@ -58,10 +94,45 @@ def generate_report(
     print("\n📊 SEARCH SUMMARY")
     print("-" * 65)
 
-    print(f"Total Suppliers        : {summary.total_suppliers}")
-    print(f"Product Matches        : {summary.product_matches}")
-    print(f"Passed Capacity Check  : {summary.capacity_matches}")
-    print(f"Passed Delivery Check  : {summary.delivery_matches}")
+    label = ENTITY_LABELS[requirement.entity_type]
+
+    print(f"Total {label:<22}: {summary.total_entities}")
+    print(f"Location Matches       : {summary.location_matches}")
+
+    if requirement.entity_type == "supplier":
+
+        print(f"Product Matches        : {summary.match1}")
+
+        if requirement.hard_constraints.minimum_capacity is None:
+            print("Capacity Matches       : Not Applied")
+        else:
+            print(f"Capacity Matches       : {summary.match2}")
+
+        if requirement.hard_constraints.maximum_delivery_days is None:
+            print("Delivery Matches       : Not Applied")
+        else:
+            print(f"Delivery Matches       : {summary.match3}")
+
+    elif requirement.entity_type == "professional":
+
+        print(f"Role Matches           : {summary.match1}")
+
+        if requirement.hard_constraints.skills:
+            print(f"Skills Matches         : {summary.match2}")
+        else:
+            print("Skills Matches         : Not Applied")
+
+        if requirement.hard_constraints.minimum_experience is not None:
+            print(f"Experience Matches     : {summary.match3}")
+        else:
+            print("Experience Matches     : Not Applied")
+
+    else:   # opportunity
+
+        print(f"Industry Matches       : {summary.match1}")
+        print(f"Budget Matches         : {summary.match2}")
+        print(f"Priority Matches       : {summary.match3}")
+
     print(f"Final Recommendations  : {summary.final_matches}")
 
     print("\n📦 DATASET CAPABILITY CHECK")
@@ -78,13 +149,13 @@ def generate_report(
         for field in capability.unavailable:
             print(f"✗ {field}")
 
-    print("\n🏆 RECOMMENDED SUPPLIERS")
+    print(f"\n🏆 RECOMMENDED {ENTITY_LABELS[requirement.entity_type].upper()}")
     print("-" * 65)
 
     for i, match in enumerate(matches, start=1):
 
         print(f"\n{i}. {match.entity_name}")
-        print(f"Supplier ID : {match.entity_id}")
+        print(f"{requirement.entity_type.capitalize()} ID : {match.entity_id}")
         print(f"Score       : {match.score}")
 
         print("\nScore Breakdown")
@@ -99,14 +170,16 @@ def generate_report(
 
         print("-" * 65)
 
-    print("\n⚠ RISK ANALYSIS")
-    print("-" * 65)
+    if requirement.entity_type == "supplier":
 
-    for risk in risks:
-        print(f"\n{risk.supplier_name} ({risk.supplier_id})")
+        print("\n⚠ RISK ANALYSIS")
+        print("-" * 65)
 
-        for item in risk.risks:
-            print(f"   • {item}")
+        for risk in risks:
+            print(f"\n{risk.supplier_name} ({risk.supplier_id})")
+
+            for item in risk.risks:
+                print(f"   • {item}")
 
     print("\n❓ MISSING INFORMATION")
     print("-" * 65)
@@ -140,14 +213,34 @@ def generate_report(
 
         print("\nRecommended Workflow")
 
-        actions = [
-            "Review the top-ranked suppliers.",
-            "Confirm missing certification requirements.",
-            "Obtain procurement manager approval.",
-            "Generate procurement enquiry email.",
-            "Send enquiry to selected suppliers.",
-            "Await supplier quotations."
-        ]
+        if requirement.entity_type == "supplier":
+
+            actions = [
+                "Review the top-ranked suppliers.",
+                "Confirm missing certification requirements.",
+                "Obtain procurement manager approval.",
+                "Generate procurement enquiry email.",
+                "Send enquiry to selected suppliers.",
+                "Await supplier quotations."
+            ]
+
+        elif requirement.entity_type == "professional":
+
+            actions = [
+                "Review the recommended professionals.",
+                "Schedule interviews.",
+                "Verify experience.",
+                "Contact shortlisted professionals."
+            ]
+
+        else:
+
+            actions = [
+                "Review matching opportunities.",
+                "Check eligibility.",
+                "Prepare proposal.",
+                "Submit application."
+            ]
 
         for i, action in enumerate(actions, start=1):
             print(f"{i}. {action}")
@@ -164,7 +257,7 @@ if __name__ == "__main__":
     from agent.controller import run_agent
 
     request = """
-Find three suppliers from South India providing food-grade biodegradable containers with minimum capacity of 10000 units and delivery within 30 days.
+Find food packaging opportunities in South India.
 """
 
     result = run_agent(request)
@@ -183,7 +276,9 @@ Find three suppliers from South India providing food-grade biodegradable contain
 
 
     if not result["matches"]:
-        print("\nNo suppliers matched the requested criteria.")
+        entity_label = ENTITY_LABELS[result["requirement"].entity_type].lower()
+
+        print(f"\nNo {entity_label} matched the requested criteria.")
 
         print("-" * 65)
         print("Try one or more of the following:")
@@ -200,25 +295,37 @@ Find three suppliers from South India providing food-grade biodegradable contain
         approved = request_human_approval()
 
         if approved:
+
             print("\n✅ Recommendations Approved")
-            print("\nGenerating procurement enquiry...\n")
 
-            from tools.entity_details import get_entity_details
+            if result["requirement"].entity_type == "supplier":
 
-            match = result["matches"][0]
+                print("\nGenerating procurement enquiry...\n")
 
-            supplier = get_entity_details(match.entity_id)
+                from tools.entity_details import get_entity_details
 
-            email = generate_procurement_email(
-                result["requirement"],
-                supplier
-            )
+                match = result["matches"][0]
 
-            email = generate_procurement_email(
-                result["requirement"],
-                supplier
-            )
-            print(email)
+                supplier = get_entity_details(match.entity_id)
+
+                email = generate_procurement_email(
+                    result["requirement"],
+                    supplier
+                )
+
+                print(email)
+
+            elif result["requirement"].entity_type == "professional":
+
+                print("\nRecommended next step:")
+                print("Contact the shortlisted professionals and schedule interviews.")
+
+            elif result["requirement"].entity_type == "opportunity":
+
+                print("\nRecommended next step:")
+                print("Review the opportunity details and prepare an application.")
+
         else:
+
             print("\n❌ Recommendations Rejected")
             print("\nWorkflow terminated.")

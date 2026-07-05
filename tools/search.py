@@ -14,6 +14,7 @@ def search_entities(
     product_category=None,
     certification=None,
     skills=None,
+    role=None,
     category=None,
 ):
     """
@@ -41,17 +42,18 @@ def search_entities(
             params.append(state)
 
         if product_category:
-            normalized_product = (
+
+            words = (
                 product_category.lower()
                 .replace("-", " ")
-                .strip()
+                .split()
             )
 
-            query += """
-            AND LOWER(REPLACE(product_category, '-', ' ')) LIKE ?
-            """
-
-            params.append(f"%{normalized_product}%")
+            for word in words:
+                query += """
+                AND LOWER(REPLACE(product_category,'-',' ')) LIKE ?
+                """
+                params.append(f"%{word}%")
 
         if certification:
             query += " AND certifications LIKE ?"
@@ -65,21 +67,27 @@ def search_entities(
             query += " AND state = ?"
             params.append(state)
 
+        if role:
+            query += " AND LOWER(role) LIKE ?"
+            params.append(f"%{role.lower()}%")
+
         if skills:
             query += " AND LOWER(skills) LIKE ?"
             params.append(f"%{skills.lower()}%")
 
     # ---------------- Opportunities ----------------
 
+    # ---------------- Opportunities ----------------
+
     elif entity_type == "opportunity":
 
-        if category:
-            query += " AND LOWER(category) LIKE ?"
-            params.append(f"%{category.lower()}%")
-
         if state:
-            query += " AND LOWER(location) LIKE ?"
-            params.append(f"%{state.lower()}%")
+            query += " AND location = ?"
+            params.append(state)
+
+        if product_category:
+            query += " AND LOWER(industry) LIKE ?"
+            params.append(f"%{product_category.lower()}%")
 
     rows = db.fetchall(query, tuple(params))
 

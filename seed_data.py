@@ -95,16 +95,67 @@ def generate_supplier(index: int):
 # PROFESSIONAL
 # --------------------------------------------------
 
+PROFESSIONAL_PROFILES = [
+    {
+        "role": "Procurement Manager",
+        "industry": "Food Packaging",
+        "skills": "Procurement|Vendor Management|SAP",
+    },
+    {
+        "role": "Strategic Buyer",
+        "industry": "Manufacturing",
+        "skills": "Strategic Sourcing|Contract Negotiation|Microsoft Excel",
+    },
+    {
+        "role": "Supply Chain Manager",
+        "industry": "Logistics",
+        "skills": "Supply Chain|Inventory Planning|Oracle ERP",
+    },
+    {
+        "role": "Packaging Procurement Specialist",
+        "industry": "Food Packaging",
+        "skills": "Packaging Design|Quality Assurance|Procurement",
+    },
+    {
+        "role": "Procurement Consultant",
+        "industry": "Retail",
+        "skills": "Vendor Management|Cost Optimization|Microsoft Excel",
+    },
+    {
+        "role": "AI Engineer",
+        "industry": "Technology",
+        "skills": "Python|FastAPI|Machine Learning",
+    },
+    {
+        "role": "Backend Engineer",
+        "industry": "Technology",
+        "skills": "Python|Django|PostgreSQL",
+    },
+    {
+        "role": "Data Scientist",
+        "industry": "Technology",
+        "skills": "Python|Pandas|Scikit-learn",
+    },
+]
+
 def generate_professional(index: int):
     city, state = random_city_state()
+
+    profile = PROFESSIONAL_PROFILES[
+        (index - 1) % len(PROFESSIONAL_PROFILES)
+    ]
+    # Ensure AI Engineer is always in Chennai
+    if profile["role"] == "AI Engineer":
+        city = "Chennai"
+        state = "Tamil Nadu"
 
     return {
         "professional_id": f"PRO-{index:03}",
         "name": PROFESSIONAL_NAMES[(index - 1) % len(PROFESSIONAL_NAMES)],
-        "role": random.choice(PROFESSIONAL_ROLES),
-        "skills": "|".join(random.sample(SKILLS, 3)),
+        "role": profile["role"],
+        "skills": profile["skills"],
         "certifications": "|".join(random.sample(CERTIFICATIONS, 2)),
-        "preferred_industry": random.choice(INDUSTRIES),
+        "preferred_industry": profile["industry"],
         "experience_years": random.randint(2, 15),
         "hourly_rate": random.randint(1500, 6000),
         "remote_available": random.choice([0, 1]),
@@ -140,20 +191,106 @@ def generate_business(index: int):
 # OPPORTUNITY
 # --------------------------------------------------
 
+OPPORTUNITIES = [
+    {
+        "title": "Food Packaging Tender",
+        "industry": "Food Packaging",
+        "product_category": "Food-grade biodegradable containers",
+        "location": "Tamil Nadu",
+        "priority": "High",
+        "status": "Open",
+    },
+    {
+        "title": "Biodegradable Container Procurement",
+        "industry": "Food Packaging",
+        "product_category": "Eco-friendly packaging",
+        "location": "Karnataka",
+        "priority": "Medium",
+        "status": "Open",
+    },
+    {
+        "title": "Eco Packaging Initiative",
+        "industry": "Food Packaging",
+        "product_category": "Biodegradable food trays",
+        "location": "Kerala",
+        "priority": "High",
+        "status": "In Review",
+    },
+    {
+        "title": "Retail Packaging Contract",
+        "industry": "Retail",
+        "product_category": "Paper food cups",
+        "location": "Tamil Nadu",
+        "priority": "Medium",
+        "status": "Open",
+    },
+    {
+        "title": "Healthcare Packaging Supply",
+        "industry": "Healthcare",
+        "product_category": "Medical packaging",
+        "location": "Telangana",
+        "priority": "High",
+        "status": "Open",
+    },
+    {
+        "title": "Manufacturing Procurement",
+        "industry": "Manufacturing",
+        "product_category": "Packaging materials",
+        "location": "Andhra Pradesh",
+        "priority": "Low",
+        "status": "Open",
+    },
+    {
+        "title": "Warehouse Packaging Supply",
+        "industry": "Logistics",
+        "product_category": "Corrugated boxes",
+        "location": "Karnataka",
+        "priority": "Medium",
+        "status": "Open",
+    },
+    {
+        "title": "Export Packaging Tender",
+        "industry": "Food Packaging",
+        "product_category": "Compostable plates",
+        "location": "Tamil Nadu",
+        "priority": "High",
+        "status": "Open",
+    },
+    {
+        "title": "FMCG Supplier Onboarding",
+        "industry": "FMCG",
+        "product_category": "Takeaway boxes",
+        "location": "Kerala",
+        "priority": "Medium",
+        "status": "In Review",
+    },
+    {
+        "title": "Government Packaging Contract",
+        "industry": "Food Packaging",
+        "product_category": "Food-grade biodegradable containers",
+        "location": "Andhra Pradesh",
+        "priority": "High",
+        "status": "Open",
+    },
+]
+
+
 def generate_opportunity(index: int):
+
+    base = OPPORTUNITIES[index - 1]
 
     return {
         "opportunity_id": f"OPP-{index:03}",
-        "title": random.choice(OPPORTUNITY_TITLES),
-        "industry": random.choice(INDUSTRIES),
-        "product_category": random.choice(PRODUCTS),
-        "location": random.choice(STATES),
+        "title": base["title"],
+        "industry": base["industry"],
+        "product_category": base["product_category"],
+        "location": base["location"],
         "required_skills": "|".join(random.sample(SKILLS, 3)),
-        "budget": random.randint(100000, 1000000),
-        "deadline_days": random.randint(7, 90),
+        "budget": random.randint(200000, 1000000),
+        "deadline_days": random.randint(15, 60),
         "client_name": random.choice(BUSINESS_NAMES),
-        "priority": random.choice(["High", "Medium", "Low"]),
-        "status": random.choice(["Open", "In Review", "Closed"]),
+        "priority": base["priority"],
+        "status": base["status"],
         "description": "Business procurement opportunity",
         "created_at": timestamp(),
         "updated_at": timestamp(),

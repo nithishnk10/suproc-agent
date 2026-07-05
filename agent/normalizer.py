@@ -32,12 +32,12 @@ LOCATION_MAP = {
     "kl": ["Kerala"],
     "kerala": ["Kerala"],
 
-    "bangalore": ["Bengaluru"],
-    "bengaluru": ["Bengaluru"],
+    "bangalore": ["Karnataka"],
+    "bengaluru": ["Karnataka"],
 
-    "chennai": ["Chennai"],
-    "hyderabad": ["Hyderabad"],
-    "kochi": ["Kochi"],
+    "chennai": ["Tamil Nadu"],
+    "hyderabad": ["Telangana"],
+    "kochi": ["Kerala"],
 }
 
 def normalize_requirement(requirement: Requirement) -> Requirement:
@@ -71,6 +71,34 @@ def normalize_requirement(requirement: Requirement) -> Requirement:
             .replace("-", " ")
             .strip()
         )
+
+    # Normalize professional role
+
+    if requirement.entity_type == "professional":
+
+        role = requirement.hard_constraints.role
+
+        if role:
+
+            role = role.lower().strip()
+
+            if "procurement" in role:
+                requirement.hard_constraints.role = "procurement"
+
+            elif "buyer" in role:
+                requirement.hard_constraints.role = "buyer"
+
+            elif "supply chain" in role:
+                requirement.hard_constraints.role = "supply chain"
+
+            elif "ai engineer" in role:
+                requirement.hard_constraints.role = "ai engineer"
+
+            elif "backend" in role:
+                requirement.hard_constraints.role = "backend"
+
+            elif "data scientist" in role:
+                requirement.hard_constraints.role = "data scientist"
 
     return requirement
 

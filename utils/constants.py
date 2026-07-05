@@ -72,11 +72,13 @@ CERTIFICATIONS = [
 
 INDUSTRIES = [
     "Food Packaging",
+    "Food & Beverage",
+    "Manufacturing",
     "Healthcare",
     "Retail",
-    "Agriculture",
-    "Manufacturing",
-    "Logistics"
+    "FMCG",
+    "Logistics",
+    "Agriculture"
 ]
 
 # -------------------------------
@@ -84,15 +86,18 @@ INDUSTRIES = [
 # -------------------------------
 
 SKILLS = [
-    "Python",
-    "SQL",
-    "FastAPI",
-    "Machine Learning",
-    "AI",
-    "Supply Chain",
     "Procurement",
+    "Strategic Sourcing",
+    "Vendor Management",
+    "Supply Chain",
+    "Contract Negotiation",
+    "Cost Optimization",
+    "Inventory Planning",
     "Packaging Design",
-    "Quality Assurance"
+    "Quality Assurance",
+    "SAP",
+    "Oracle ERP",
+    "Microsoft Excel"
 ]
 
 # -------------------------------
@@ -118,16 +123,16 @@ PROFESSIONAL_NAMES = [
 ]
 
 PROFESSIONAL_ROLES = [
+    "Procurement Manager",
     "Procurement Consultant",
-    "Supply Chain Analyst",
-    "Packaging Engineer",
-    "Logistics Manager",
-    "Quality Assurance Engineer",
-    "Manufacturing Consultant",
-    "Operations Manager",
-    "Vendor Relationship Manager",
-    "Business Development Manager",
-    "Food Safety Specialist"
+    "Strategic Buyer",
+    "Supply Chain Manager",
+    "Vendor Manager",
+    "Sourcing Specialist",
+    "Category Manager",
+    "Purchasing Officer",
+    "Procurement Analyst",
+    "Packaging Procurement Specialist"
 ]
 
 # ----------------------------------------
@@ -158,15 +163,15 @@ BUSINESS_NAMES = [
 
 OPPORTUNITY_TITLES = [
     "Food Packaging Tender",
-    "Government Packaging Contract",
     "Biodegradable Container Procurement",
-    "Medical Packaging Project",
-    "Export Packaging Tender",
-    "Warehouse Packaging Supply",
-    "Retail Packaging Contract",
-    "FMCG Supplier Onboarding",
     "Eco Packaging Initiative",
-    "Manufacturing Procurement"
+    "Retail Packaging Contract",
+    "Government Packaging Contract",
+    "Healthcare Packaging Supply",
+    "Manufacturing Procurement",
+    "Warehouse Packaging Supply",
+    "FMCG Supplier Onboarding",
+    "Export Packaging Tender"
 ]
 
 OPPORTUNITY_CATEGORIES = [

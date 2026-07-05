@@ -25,12 +25,19 @@ def filter_by_constraints(suppliers: list[dict], requirement: Requirement):
         # Certifications
         if requirement.hard_constraints.certifications:
 
-            supplier_certs = supplier["certifications"].lower()
+            supplier_certs = (
+                supplier["certifications"]
+                .lower()
+                .replace(" ", "")
+            )
 
             missing = False
 
             for cert in requirement.hard_constraints.certifications:
-                if cert.lower() not in supplier_certs:
+
+                normalized_cert = cert.lower().replace(" ", "")
+
+                if normalized_cert not in supplier_certs:
                     missing = True
                     break
 

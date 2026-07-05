@@ -5,24 +5,30 @@ from models.match import Match
 
 def validate_matches(
     matches: list[Match],
-    suppliers: list[dict],
+    entities: list[dict],
     requirement: Requirement,
 ) -> ValidationResult:
 
     errors = []
 
-    supplier_lookup = {
-        s["supplier_id"]: s
-        for s in suppliers
+    id_key = {
+        "supplier": "supplier_id",
+        "professional": "professional_id",
+        "opportunity": "opportunity_id",
+    }[requirement.entity_type]
+
+    entity_lookup = {
+        entity[id_key]: entity
+        for entity in entities
     }
 
     seen = set()
 
     for match in matches:
 
-        supplier = supplier_lookup.get(match.entity_id)
+        entity = entity_lookup.get(match.entity_id)
 
-        if supplier is None:
+        if entity is None:
             errors.append(
                 f"{match.entity_id} not found in database."
             )
@@ -30,37 +36,42 @@ def validate_matches(
 
         if match.entity_id in seen:
             errors.append(
-                f"Duplicate supplier {match.entity_id}"
+                f"Duplicate {requirement.entity_type} {match.entity_id}"
             )
 
         seen.add(match.entity_id)
 
-        if (
-            requirement.hard_constraints.locations
-            and supplier["state"] not in requirement.hard_constraints.locations
-        ):
-            errors.append(f"{supplier['supplier_id']} failed location constraint.")
+        if requirement.entity_type == "supplier":
 
-        if (
-            requirement.hard_constraints.minimum_capacity is not None
-            and supplier["monthly_capacity"] < requirement.hard_constraints.minimum_capacity
-        ):
-            errors.append(f"{supplier['supplier_id']} insufficient capacity.")
+            if (
+                requirement.hard_constraints.locations
+                and entity["state"] not in requirement.hard_constraints.locations
+            ):
+                errors.append(f"{entity[id_key]} failed location constraint.")
 
-        if (
-            requirement.hard_constraints.maximum_delivery_days is not None
-            and supplier["delivery_days"] > requirement.hard_constraints.maximum_delivery_days
-        ):
-            errors.append(f"{supplier['supplier_id']} delivery deadline not met.")
+            if (
+                requirement.hard_constraints.minimum_capacity is not None
+                and entity["monthly_capacity"] < requirement.hard_constraints.minimum_capacity
+            ):
+                errors.append(f"{entity[id_key]} insufficient capacity.")
+
+            if (
+                requirement.hard_constraints.maximum_delivery_days is not None
+                and entity["delivery_days"] > requirement.hard_constraints.maximum_delivery_days
+            ):
+                errors.append(f"{entity[id_key]} delivery deadline not met.")
 
         # Check requested number of results
     if len(matches) < requirement.requested_results:
-        errors.append(
-            f"Only {len(matches)} valid suppliers found. Requested {requirement.requested_results}."
+        print(
+            f"\nNote: Only {len(matches)} {requirement.entity_type}(s) matched "
+            f"although {requirement.requested_results} were requested."
         )
 
-    return ValidationResult(    
-        passed=len(errors) == 0,
+    passed = len(matches) > 0
+
+    return ValidationResult(
+        passed=passed,
         errors=errors,
     )
 
@@ -81,16 +92,16 @@ and deliver within 30 days.
     req = parse_requirement(request)
     req = normalize_requirement(req)
 
-    suppliers = execute_search(req)
+    entities = execute_search(req)
 
     matches = [
-        calculate_match_score(supplier, req)
-        for supplier in suppliers
+        calculate_match_score(entity, req)
+        for entity in entities
     ]
 
     result = validate_matches(
         matches,
-        suppliers,
+        entities,
         req,
     )
 

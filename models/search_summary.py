@@ -1,9 +1,11 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
 class SearchSummary(BaseModel):
-    total_suppliers: int
-    product_matches: int
-    capacity_matches: int
-    delivery_matches: int
+    total_entities: int
+    location_matches: int
+    match1: int
+    match2: int | None
+    match3: int | None
     final_matches: int

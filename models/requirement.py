@@ -3,11 +3,24 @@ from pydantic import BaseModel, Field
 
 
 class HardConstraints(BaseModel):
+    # Common
     locations: List[str] = Field(default_factory=list)
-    product_category: Optional[str] = None
     certifications: List[str] = Field(default_factory=list)
+
+    # Supplier
+    product_category: Optional[str] = None
     minimum_capacity: Optional[int] = None
     maximum_delivery_days: Optional[int] = None
+
+    # Professional
+    role: Optional[str] = None
+    skills: List[str] = Field(default_factory=list)
+    minimum_experience: Optional[int] = None
+
+    # Opportunity
+    industry: Optional[str] = None
+    minimum_budget: Optional[int] = None
+    priority: Optional[str] = None
 
 
 class Preferences(BaseModel):

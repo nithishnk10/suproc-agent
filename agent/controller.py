@@ -19,67 +19,169 @@ def run_agent(user_request: str):
 
     # Step 2
     requirement = normalize_requirement(requirement)
+    
 
-    # Total suppliers
-    total_suppliers = len(search_entities())
+
 
 
     # Suppliers matching the requested product
-    product_matches = len(
-        search_entities(
-            product_category=requirement.hard_constraints.product_category
+    # Generic search summary
+
+    # Get the complete dataset for summary statistics
+    all_entities = search_entities(entity_type=requirement.entity_type)
+
+    total_entities = len(all_entities)
+    location_matches = [
+        e for e in all_entities
+        if (
+            not requirement.hard_constraints.locations
+            or (
+                e.get("state") in requirement.hard_constraints.locations
+                or e.get("location") in requirement.hard_constraints.locations
+            )
         )
-    )
+    ]
 
-    product_suppliers = search_entities(
-        product_category=requirement.hard_constraints.product_category
-    )
+    location_matches_count = len(location_matches)
 
-    capacity_requirement = requirement.hard_constraints.minimum_capacity
-    delivery_requirement = requirement.hard_constraints.maximum_delivery_days
+    # Use the full dataset to calculate search summary
+    entities = all_entities
 
-    capacity_matches = (
-        sum(
-            supplier["monthly_capacity"] >= capacity_requirement
-            for supplier in product_suppliers
+    if requirement.entity_type == "supplier":
+
+        required_product = requirement.hard_constraints.product_category or ""
+
+        required_words = (
+            required_product.lower()
+            .replace("-", " ")
+            .split()
         )
-        if capacity_requirement is not None
-        else len(product_suppliers)
-    )
 
-    delivery_matches = (
-        sum(
-            supplier["delivery_days"] <= delivery_requirement
-            for supplier in product_suppliers
-        )
-        if delivery_requirement is not None
-        else len(product_suppliers)
-    )
+
+        # Product matches (after location filter)
+        match1 = len([
+            s for s in location_matches
+            if all(
+                word in s["product_category"].lower().replace("-", " ")
+                for word in required_words
+            )
+        ])
+
+        # Capacity matches
+        if requirement.hard_constraints.minimum_capacity is not None:
+            match2 = len([
+                s for s in location_matches
+                if s["monthly_capacity"] >= requirement.hard_constraints.minimum_capacity
+            ])
+        else:
+            match2 = None
+
+        # Delivery matches
+        if requirement.hard_constraints.maximum_delivery_days is not None:
+            match3 = len([
+                s for s in location_matches
+                if s["delivery_days"] <= requirement.hard_constraints.maximum_delivery_days
+            ])
+        else:
+            match3 = None
+
+
+    elif requirement.entity_type == "professional":
+
+        role = requirement.hard_constraints.role
+        skills = requirement.hard_constraints.skills
+        experience = requirement.hard_constraints.minimum_experience
+
+        # Role matches
+        match1 = len([
+            p for p in entities
+            if (
+                not role
+                or role.lower() in p["role"].lower()
+            )
+        ])
+
+        # Skills matches
+        if skills:
+            match2 = len([
+                p for p in entities
+                if all(
+                    skill.lower() in p["skills"].lower()
+                    for skill in skills
+                )
+            ])
+        else:
+            match2 = None
+
+        # Experience matches
+        if experience is not None:
+            match3 = len([
+                p for p in entities
+                if p["experience_years"] >= experience
+            ])
+        else:
+            match3 = None
+
+    else:
+
+        industry = requirement.hard_constraints.industry
+        budget = requirement.hard_constraints.minimum_budget
+        priority = requirement.hard_constraints.priority
+
+        match1 = len([
+            o for o in entities
+            if (
+                not industry
+                or industry.lower() in o["industry"].lower()
+            )
+        ])
+
+        match2 = len([
+            o for o in entities
+            if (
+                budget is None
+                or o["budget"] >= budget
+            )
+        ])
+
+        match3 = len([
+            o for o in entities
+            if (
+                not priority
+                or o["priority"].lower() == priority.lower()
+            )
+        ])
 
     # Step 3
     plan = create_execution_plan(requirement)
 
     # Step 4
-    suppliers = execute_search(requirement)
+    # Perform the actual filtered search for recommendations
+    filtered_entities = execute_search(requirement)
+
+    entities = filtered_entities
 
 
     # Step 5
     matches = [
-        calculate_match_score(supplier, requirement)
-        for supplier in suppliers
+        calculate_match_score(entity, requirement)
+        for entity in entities
     ]
 
-    risks = [
-        analyze_supplier_risk(supplier)
-        for supplier in suppliers
-    ]
+    if requirement.entity_type == "supplier":
+        risks = [
+            analyze_supplier_risk(entity)
+            for entity in entities
+        ]
+    else:
+        risks = []
 
     missing_information = detect_missing_information(requirement)
 
     # Step 6
     validation = validate_matches(
         matches,
-        suppliers,
+        entities,
         requirement
     )
 
@@ -95,7 +197,9 @@ def run_agent(user_request: str):
             print(f"  • {error}")
 
         if attempt == 1:
-            print("\nAction: Re-running supplier search with the original constraints.")
+            print(
+                f"\nAction: Re-running {requirement.entity_type} search with the original constraints."
+            )
 
         elif attempt == 2:
             print("\nAction: Constraints appear too restrictive.")
@@ -105,38 +209,42 @@ def run_agent(user_request: str):
             print("\nAction: Maximum correction attempts reached.")
             print("Preparing recommendations for the user.")
 
-        suppliers = execute_search(requirement)
+        entities = execute_search(requirement)
 
         matches = [
-            calculate_match_score(supplier, requirement)
-            for supplier in suppliers
+            calculate_match_score(entity, requirement)
+            for entity in entities
         ]
+
+        print(f"Entities found : {len(entities)}")
+        print(f"Matches created: {len(matches)}")
 
         validation = validate_matches(
             matches,
-            suppliers,
+            entities,
             requirement
         )
 
         attempt += 1
 
     summary = SearchSummary(
-        total_suppliers=total_suppliers,
-        product_matches=product_matches,
-        capacity_matches=capacity_matches,
-        delivery_matches=delivery_matches,
+        total_entities=total_entities,
+        location_matches=location_matches_count,
+        match1=match1,
+        match2=match2,
+        match3=match3,
         final_matches=len(matches),
     )
 
     capability = check_dataset_capability(requirement)
 
-    trace = build_execution_trace()
+    trace = build_execution_trace(requirement.entity_type)
 
     return {
         "requirement": requirement,
         "plan": plan,
         "summary": summary,
-        "suppliers": suppliers,
+        "entities": entities,
         "matches": matches,
         "risks": risks,
         "missing_information": missing_information,

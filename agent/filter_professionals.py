@@ -1,55 +1,41 @@
 from models.requirement import Requirement
 
 
-def filter_professionals(
-    professionals: list[dict],
-    requirement: Requirement,
-):
+def filter_professionals(results, requirement: Requirement):
 
     filtered = []
 
-    for professional in professionals:
+    role = requirement.hard_constraints.role
+    skills = requirement.hard_constraints.skills
+    locations = requirement.hard_constraints.locations
+    minimum_experience = requirement.hard_constraints.minimum_experience
 
-        # Location filter
-        if (
-            requirement.hard_constraints.locations
-            and professional["state"] not in requirement.hard_constraints.locations
-        ):
+    for professional in results:
+
+        if locations and professional["state"] not in locations:
             continue
+
+        if role:
+
+          requested_words = role.lower().split()
+          professional_role = professional["role"].lower()
+
+          if not any(word in professional_role for word in requested_words):
+              continue
+
+        if minimum_experience is not None:
+            if professional["experience_years"] < minimum_experience:
+                continue
+
+        if skills:
+            professional_skills = professional["skills"].lower()
+
+            if not all(
+                skill.lower() in professional_skills
+                for skill in skills
+            ):
+                continue
 
         filtered.append(professional)
 
     return filtered
-
-
-if __name__ == "__main__":
-
-    from agent.parser import parse_requirement
-    from agent.normalizer import normalize_requirement
-    from tools.search import search_entities
-
-    request = """
-Find procurement professionals in Karnataka.
-"""
-
-    req = parse_requirement(request)
-    req = normalize_requirement(req)
-
-    professionals = search_entities(
-        entity_type="professional",
-        state="Karnataka"
-    )
-
-    results = filter_professionals(
-        professionals,
-        req
-    )
-
-    print(f"\nFound {len(results)} professionals\n")
-
-    for p in results:
-        print(
-            p["professional_id"],
-            p["name"],
-            p["state"]
-        )

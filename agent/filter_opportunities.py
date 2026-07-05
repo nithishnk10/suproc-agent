@@ -1,64 +1,47 @@
 from models.requirement import Requirement
 
 
-def filter_opportunities(
-    opportunities: list[dict],
-    requirement: Requirement,
-):
+def filter_opportunities(results, requirement: Requirement):
 
     filtered = []
 
-    for opportunity in opportunities:
+    locations = requirement.hard_constraints.locations
+    industry = requirement.hard_constraints.industry
+    minimum_budget = requirement.hard_constraints.minimum_budget
+    priority = requirement.hard_constraints.priority
 
-        # Location filter
-        if (
-            requirement.hard_constraints.locations
-            and opportunity["location"] not in requirement.hard_constraints.locations
-        ):
+    for opportunity in results:
+
+
+        if locations and opportunity["location"] not in locations:
             continue
 
-        # Category filter
-        if (
-            requirement.hard_constraints.product_category
-            and requirement.hard_constraints.product_category.lower()
-            not in opportunity["title"].lower()
-            and requirement.hard_constraints.product_category.lower()
-            not in opportunity["category"].lower()
-        ):
+        if industry:
+
+          required = industry.lower().strip()
+          available = opportunity["industry"].lower().strip()
+
+          if required not in available:
+              continue
+
+        if minimum_budget is not None:
+            if opportunity["budget"] < minimum_budget:
+                continue
+
+        if priority and priority.lower() != "default":
+
+            if opportunity["priority"].lower().strip() != priority.lower().strip():
+                continue
+          
+        # Only recommend active opportunities
+
+        status = opportunity["status"].lower().strip()
+
+        if status == "closed":
             continue
+
+        
 
         filtered.append(opportunity)
 
     return filtered
-
-
-if __name__ == "__main__":
-
-    from agent.parser import parse_requirement
-    from agent.normalizer import normalize_requirement
-    from tools.search import search_entities
-
-    request = """
-Find food packaging opportunities in South India.
-"""
-
-    req = parse_requirement(request)
-    req = normalize_requirement(req)
-
-    opportunities = search_entities(
-        entity_type="opportunity"
-    )
-
-    results = filter_opportunities(
-        opportunities,
-        req
-    )
-
-    print(f"\nFound {len(results)} opportunities\n")
-
-    for opportunity in results:
-        print(
-            opportunity["opportunity_id"],
-            opportunity["title"],
-            opportunity["location"]
-        )
